@@ -1,98 +1,219 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { router } from "expo-router";
+import { Controller, useForm } from "react-hook-form";
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import { signupSchema, type SignupFormData } from "../schemas/signupSchema";
 
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
+export default function SignUpScreen() {
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<SignupFormData>({
+    resolver: zodResolver(signupSchema),
+    mode: "onSubmit",
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+  });
+
+  function onSubmit(data: SignupFormData) {
+    console.log("First Name:", data.firstName);
+    console.log("Last Name:", data.lastName);
+    console.log("Email:", data.email);
+
+    router.push({
+      pathname: "/confirmation",
+      params: { firstName: data.firstName },
+    });
   }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
+
   return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
-}
+    <ScrollView contentContainerStyle={styles.container}>
+      <View style={styles.form}>
+        <Text style={styles.title}>Create Account</Text>
 
-export default function HomeScreen() {
-  return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
+        <Text style={styles.subtitle}>Enter your details to get started</Text>
 
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
+       
+        <Text style={styles.label}>First Name</Text>
+        <Controller
+          control={control}
+          name="firstName"
+          render={({ field: { onChange, value } }) => (
+            <TextInput
+              style={styles.input}
+              placeholder="Enter first name"
+              value={value}
+              onChangeText={onChange}
+            />
+          )}
+        />
+        {errors.firstName && (
+          <Text style={styles.error}>{errors.firstName.message}</Text>
+        )}
 
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
+     
+        <Text style={styles.label}>Last Name</Text>
+        <Controller
+          control={control}
+          name="lastName"
+          render={({ field: { onChange, value } }) => (
+            <TextInput
+              style={styles.input}
+              placeholder="Enter last name"
+              value={value}
+              onChangeText={onChange}
+            />
+          )}
+        />
+        {errors.lastName && (
+          <Text style={styles.error}>{errors.lastName.message}</Text>
+        )}
 
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
-    </ThemedView>
+        <Text style={styles.label}>Email</Text>
+        <Controller
+          control={control}
+          name="email"
+          render={({ field: { onChange, value } }) => (
+            <TextInput
+              style={styles.input}
+              placeholder="Enter email"
+              value={value}
+              onChangeText={onChange}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+          )}
+        />
+        {errors.email && (
+          <Text style={styles.error}>{errors.email.message}</Text>
+        )}
+
+        <Text style={styles.label}>Password</Text>
+        <Controller
+          control={control}
+          name="password"
+          render={({ field: { onChange, value } }) => (
+            <TextInput
+              style={styles.input}
+              placeholder="Enter password"
+              value={value}
+              onChangeText={onChange}
+              secureTextEntry
+            />
+          )}
+        />
+        {errors.password && (
+          <Text style={styles.error}>{errors.password.message}</Text>
+        )}
+
+      
+        <Text style={styles.label}>Confirm Password</Text>
+        <Controller
+          control={control}
+          name="confirmPassword"
+          render={({ field: { onChange, value } }) => (
+            <TextInput
+              style={styles.input}
+              placeholder="Confirm password"
+              value={value}
+              onChangeText={onChange}
+              secureTextEntry
+            />
+          )}
+        />
+        {errors.confirmPassword && (
+          <Text style={styles.error}>{errors.confirmPassword.message}</Text>
+        )}
+
+
+        <Pressable style={styles.button} onPress={() => handleSubmit(onSubmit)()}>
+          <Text style={styles.buttonText}>Sign Up</Text>
+        </Pressable>
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    justifyContent: 'center',
-    flexDirection: 'row',
+    flexGrow: 1,
+    backgroundColor: "#F8FAFC",
+    paddingHorizontal: 12,
+    paddingVertical: 24,
+    justifyContent: "center",
+    alignItems: "center",
   },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
+
+  form: {
+    width: "100%",
+    maxWidth: 420,
   },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
-  },
+
   title: {
-    textAlign: 'center',
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "#0F172A",
+    textAlign: "center",
+    marginBottom: 8,
   },
-  code: {
-    textTransform: 'uppercase',
+
+  subtitle: {
+    fontSize: 15,
+    color: "#64748B",
+    textAlign: "center",
+    marginBottom: 20,
   },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
+
+  label: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#334155",
+    marginTop: 12,
+    marginBottom: 6,
+  },
+
+  input: {
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    fontSize: 16,
+    color: "#0F172A",
+  },
+
+  error: {
+    color: "#DC2626",
+    fontSize: 12,
+    marginTop: 5,
+  },
+
+  button: {
+    backgroundColor: "#2563EB",
+    paddingVertical: 15,
+    borderRadius: 12,
+    alignItems: "center",
+    marginTop: 24,
+  },
+
+  buttonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });
